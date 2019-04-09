@@ -1,56 +1,53 @@
 import { Server } from 'ws';
-import GameSession from './game/logic/gameSession';
+import Router from './server/router';
+import IdGenerator from './server/services/idGenerator';
+import ApplicationContainer from './server/container';
+import ClientsRegistry from './server/services/clientsRegistry';
+import LobbyRegistry from './server/services/lobbyRegistry';
 
-const url = require('url');
 const wss = new Server({ port: 8080 });
+const app = new ApplicationContainer();
 
-/*
-{type: MESSAGE_TYPE}
-*/
-
-const clients = [];
+app.add('router', new Router(app));
+app.add('lobbies', new LobbyRegistry(app));
+app.add('clients', new ClientsRegistry(app));
+app.add('idGenerator', new IdGenerator(app));
 
 wss.on('connection', function (ws, request) {
   
-  ws.id = generateClientId();
-  clients.push({nickname: getUsernameFromRequest(request), ws: ws});
+  let connectedNickname = getUsernameFromRequest(request);
+  if (!connectedNickname) {
+    ws.send('Nickname is empty')
+    ws.close();
+  }
+
+  app.get('clients').add({nickname: getUsernameFromRequest(request), ws: ws});
 
   ws.on('message', function (message) {
-    // message = JSON.parse(message)
-    // if (message.type === 'CREATE_GAME') {
-    //   gameSessions.push(new GameSession('new id'));
-    // } else {
-    //   connect(gameSessions.id)
-    // }
+    let client = app.get('clients').find(ws);
 
-    let client = getClientById(ws.id);
-    ws.send('Hello ' + client.nickname);
-
-  });
-});
-
-function getClientById(id) {
-  let foundClient = null;
-  clients.forEach(function (client) {
-    
-    if (client.ws.id === id) {
-      foundClient = client;
+    try {
+      message = JSON.parse(message);
+    } catch(e) {
+      ws.send('Wrong JSON');
       return;
     }
-  })
 
-  return foundClient;
-}
+    if (!message.type || !message.params) {
+      ws.send('Wrong command');
+      return;
+    }
 
-function generateClientId() {
-  var text = "";
-  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let routerResponse = app.get('router').handle(message, client);
+    if (!routerResponse) {
+      ws.send('404');
+      return;
+    }
 
-  for (var i = 0; i < 16; i++)
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
-
-  return text;  
-}
+    ws.send(JSON.stringify({response: routerResponse}))
+  });
+  
+});
 
 function getUsernameFromRequest(request) {
   return findGetParameter(request.url, 'username');
