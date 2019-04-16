@@ -6,6 +6,7 @@ import IdGenerator from './server/services/idGenerator';
 import ApplicationContainer from './server/container';
 import ClientsRegistry from './server/services/clientsRegistry';
 import LobbyRegistry from './server/services/lobbyRegistry';
+import Sender from './server/services/sender';
 
 const wss = new Server({
   port: 8080
@@ -16,7 +17,7 @@ app.add('router', new Router(app));
 app.add('lobbies', new LobbyRegistry(app));
 app.add('clients', new ClientsRegistry(app));
 app.add('idGenerator', new IdGenerator(app));
-
+app.add('sender', new Sender(app));
 
 
 wss.on('connection', function (ws, request) {
@@ -49,15 +50,15 @@ wss.on('connection', function (ws, request) {
 
     let routerResponse = app.get('router').handle(message, client);
 
-    if (!routerResponse) {
-      sendError(ws, 'Not found')
+    if (routerResponse.isError()) {
+      sendError(ws, routerResponse.getResponse())
       return;
     }
 
     ws.send(JSON.stringify({
       success: true,
       type: message.type,
-      response: routerResponse
+      response: routerResponse.getResponse()
     }))
   });
 

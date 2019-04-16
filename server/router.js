@@ -1,4 +1,5 @@
 import LobbyController from "./controller/lobbyController";
+import RouterResponse from "./routerResponse";
 // import GameController from "./controller/gameController";
 
 class Router {
@@ -14,7 +15,7 @@ class Router {
         let payload = message.type.split('.');
 
         if (payload.length === 0 || !this._isControllerMethodExists(payload[0], payload[1])) {
-            return false;
+            return new RouterResponse(false, 'Bad payload or method not found');
         }
 
         return this[payload[0]][payload[1]](message.params, client);

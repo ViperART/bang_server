@@ -1,4 +1,4 @@
-import GameLobby from "../../game/logic/lobby";
+import GameLobby from "../../game/logic/gameLobby";
 
 class LobbyRegistry {
     
@@ -11,7 +11,7 @@ class LobbyRegistry {
         const lobby = new GameLobby(client);
         const lobbyId = this.app.get('idGenerator').generate()
         this.lobbies[lobbyId] = lobby;
-        return lobbyId;
+        return this.lobbies[lobbyId];
     }
 
     findAll() {
@@ -21,6 +21,16 @@ class LobbyRegistry {
         }
 
         return lobbies;
+    }
+
+    findById(id) {
+        for (let lobbyId in this.lobbies) {
+            if (id === lobbyId) {
+                return this.lobbies[id];
+            }
+        }
+
+        return null;
     }
 }
 
