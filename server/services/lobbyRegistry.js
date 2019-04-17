@@ -8,16 +8,15 @@ class LobbyRegistry {
     }
 
     create(client) {
-        const lobby = new GameLobby(client);
-        const lobbyId = this.app.get('idGenerator').generate()
-        this.lobbies[lobbyId] = lobby;
+        const lobbyId = this.app.get('idGenerator').generate();
+        this.lobbies[lobbyId] = new GameLobby(client, lobbyId);
         return this.lobbies[lobbyId];
     }
 
     findAll() {
-        const lobbies = []
+        let lobbies = [];
         for (let id in this.lobbies) {
-            lobbies.push({id, host: this.lobbies[id].host.nickname});
+            lobbies.push({id, host: this.lobbies[id].host.getNickname()});
         }
 
         return lobbies;
@@ -32,6 +31,25 @@ class LobbyRegistry {
 
         return null;
     }
+
+    remove(id) {
+        delete this.lobbies[id]
+    }
+
+    removeClientFromAllLobbies(client) {
+        for (let id in this.lobbies) {
+            let lobbyObject = this.lobbies[id];
+            if (lobbyObject.hasClient(client)) {
+                lobbyObject.leave(client);
+                if (lobbyObject.getClientsCount() === 0) {
+                    this.remove(id);
+                } else {
+                    this.app.get('sender').sendTo('lobby', 'onClientLeft', lobbyObject.getClientsView(), lobbyObject.getClients());
+                }
+            }
+        }
+    }
+
 }
 
 export default LobbyRegistry;

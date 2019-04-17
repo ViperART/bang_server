@@ -8,7 +8,7 @@ class LobbyController {
 
     create(params, client) {
         let createdLobby = this.app.get('lobbies').create(client);
-        return new RouterResponse(true, createdLobby.getPlayers())
+        return new RouterResponse(true, {id: createdLobby.getId(), clients: createdLobby.getClientsView()})
     }
 
     list(params, client) {
@@ -26,14 +26,28 @@ class LobbyController {
             return new RouterResponse(false, 'Lobby not found');
         }
 
-        lobby.join(client)
-        this._notifyLobbyAboutJoinedPlayer(lobby, client)
+        lobby.join(client);
+        this.app.get('sender').sendTo('lobby', 'onClientJoin', lobby.getClientsView(), lobby.getClients());
 
-        return new RouterResponse(true, lobby.getPlayers())
+        return new RouterResponse(true, {});
     }
 
-    _notifyLobbyAboutJoinedPlayer(lobby, client) {
-        //this.app.get('sender').sendTo()
+    leave(params, client) {
+        let lobby = this.app.get('lobbies').findById(params.id);
+
+        if (null === lobby) {
+            return new RouterResponse(false, 'Lobby not found');
+        }
+
+        lobby.leave(client);
+
+        if (lobby.getClientsCount() === 0) {
+            this.app.get('lobbies').remove(lobby.getId());
+        } else {
+            this.app.get('sender').sendTo('lobby', 'onClientLeft', lobby.getClientsView(), lobby.getClients());
+        }
+
+        return new RouterResponse(true, {});
     }
 }
 

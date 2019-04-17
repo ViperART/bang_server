@@ -1,12 +1,10 @@
 import LobbyController from "./controller/lobbyController";
 import RouterResponse from "./routerResponse";
-// import GameController from "./controller/gameController";
 
 class Router {
     
     constructor(app) {
         this.app = app;
-        // this.game = new GameController(app);
         this.lobby = new LobbyController(app);
         
     }

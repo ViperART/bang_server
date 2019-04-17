@@ -5,8 +5,7 @@ class Sender {
 
     sendTo(controller, method, params, recipients) {
         for (let i in recipients) {
-            // recipients[i] -> {nickname, ws}
-            recipients[i].ws.send(JSON.stringify({
+            recipients[i].getSocket().send(JSON.stringify({
                 success: true,
                 type: controller + '.' + method,
                 response: params

@@ -2,20 +2,26 @@ class ClientsRegistry {
     
     constructor(app) {
         this.app = app;
-        this.clients = {};
+        this.clients = [];
     }
 
     add(client) {
-        client.ws.id = this.app.get('idGenerator').generate()
-        this.clients[client.ws.id] = client;
+        client.setId(this.app.get('idGenerator').generate());
+        this.clients.push(client);
     }
 
     find(ws) {
-        if (!this.clients[ws.id]) {
-            return null;
+        for (let i in this.clients) {
+            if (ws.id === this.clients[i].getId()) {
+                return this.clients[i];
+            }
         }
 
-        return this.clients[ws.id];
+        return null;
+    }
+
+    remove(leftClient) {
+        this.clients = this.clients.filter((client) => client !== leftClient);
     }
 }
 

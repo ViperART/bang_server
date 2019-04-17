@@ -1,27 +1,66 @@
 import GameSession from "./gameSession";
 
 class GameLobby {
-    constructor(host) {
+    constructor(host, id) {
+        this.id = id;
         this.host = host;
-        this.players = [];
+        this.clients = [];
         this.gameSession = null;
     }
 
-    // TODO: Need Client class (getId(), getNickname(), getSocket())
+    getId() {
+        return this.id;
+    }
 
-    getPlayers() {
-        return [this.host, ...this.players]
+    getClients() {
+        return [this.host, ...this.clients]
+    }
+
+    getClientsView() {
+        return this.getClients().map((client) => {
+            return {
+                nickname: client.getNickname(),
+                isHost: client === this.host
+            }
+        })
+    }
+
+    hasClient(client) {
+        let clients = this.getClients();
+        for (let i in clients) {
+            if (clients[i] === client) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    getClientsCount() {
+        if (!this.host) {
+            return 0;
+        }
+
+        return this.getClients().length;
     }
 
     join(client) {
-        let players = [this.host, ...this.players];
-        for (let i in players) {
-            if (client.ws.id === players[i].ws.id) {
+        let clients = this.getClients();
+        for (let i in clients) {
+            if (client.getId() === clients[i].getId()) {
                 return;
             }
         }
 
-        this.players.push(client)
+        this.clients.push(client)
+    }
+
+    leave(leftClient) {
+        if (leftClient === this.host) {
+            this.host = this.clients.shift();
+        } else {
+            this.clients = this.clients.filter((client) => client !== leftClient)
+        }
     }
 }
 
