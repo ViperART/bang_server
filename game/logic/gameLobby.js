@@ -1,11 +1,9 @@
-import GameSession from "./gameSession";
-
 class GameLobby {
     constructor(host, id) {
         this.id = id;
         this.host = host;
         this.clients = [];
-        this.gameSession = null;
+        this.readyTable = {};
     }
 
     getId() {
@@ -20,7 +18,9 @@ class GameLobby {
         return this.getClients().map((client) => {
             return {
                 nickname: client.getNickname(),
-                isHost: client === this.host
+                id: client.getId(),
+                isHost: client === this.host,
+                isReady: this.readyTable[client.getId()]
             }
         })
     }
@@ -45,14 +45,22 @@ class GameLobby {
     }
 
     join(client) {
+        if (this.isFull()) {
+            return false;
+        }
+
         let clients = this.getClients();
+
         for (let i in clients) {
             if (client.getId() === clients[i].getId()) {
-                return;
+                return false;
             }
         }
 
-        this.clients.push(client)
+        this.clients.push(client);
+        this.readyTable[client.getId()] = false;
+
+        return true;
     }
 
     leave(leftClient) {
@@ -60,7 +68,30 @@ class GameLobby {
             this.host = this.clients.shift();
         } else {
             this.clients = this.clients.filter((client) => client !== leftClient)
+            delete this.readyTable[leftClient.getId()];
         }
+    }
+
+    ready(client) {
+        this.readyTable[client.getId()] = !this.readyTable[client.getId()];
+    }
+
+    isReadyForStart() {
+        if (this.getClientsCount() < 4) {
+            return false;
+        }
+
+        for (let i in this.readyTable) {
+            if (this.readyTable[i] === false) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    isFull() {
+        return this.getClientsCount() === 7;
     }
 }
 

@@ -6,6 +6,7 @@ import ClientsRegistry from './server/services/clientsRegistry';
 import LobbyRegistry from './server/services/lobbyRegistry';
 import Sender from './server/services/sender';
 import Client from './server/entities/client';
+import GameRegistry from "./server/services/gameRegistry";
 
 const wss = new Server({
     port: 8080
@@ -14,6 +15,7 @@ const app = new ApplicationContainer();
 
 app.add('router', new Router(app));
 app.add('lobbies', new LobbyRegistry(app));
+app.add('games', new GameRegistry(app));
 app.add('clients', new ClientsRegistry(app));
 app.add('idGenerator', new IdGenerator(app));
 app.add('sender', new Sender(app));

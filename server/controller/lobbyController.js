@@ -26,10 +26,18 @@ class LobbyController {
             return new RouterResponse(false, 'Lobby not found');
         }
 
-        lobby.join(client);
+        if (lobby.isFull()) {
+            return new RouterResponse(false, 'Lobby is full');
+        }
+
+        let joinStatus = lobby.join(client);
+        if (!joinStatus) {
+            return new RouterResponse(false, 'Лобби заполнено или вы пытаетесь зайти в лобби в котором вы уже находитесь');
+        }
+
         this.app.get('sender').sendTo('lobby', 'onClientJoin', lobby.getClientsView(), lobby.getClients());
 
-        return new RouterResponse(true, {});
+        return new RouterResponse(true, {id: params.id});
     }
 
     leave(params, client) {
@@ -48,6 +56,36 @@ class LobbyController {
         }
 
         return new RouterResponse(true, {});
+    }
+
+    ready(params, client) {
+        let lobby = this.app.get('lobbies').findById(params.id);
+
+        if (null === lobby) {
+            return new RouterResponse(false, 'Lobby not found');
+        }
+
+        lobby.ready(client);
+        this.app.get('sender').sendTo('lobby', 'onClientReady', lobby.getClientsView(), lobby.getClients());
+
+        return new RouterResponse(true, {});
+    }
+
+    gameStart(params, client) {
+        let lobby = this.app.get('lobbies').findById(params.id);
+
+        if (null === lobby) {
+            return new RouterResponse(false, 'Lobby not found');
+        }
+
+        if (lobby.isReadyForStart()) {
+            //lobby.startGame()
+            // notify about game start
+            // TODO: start game and send broadcast about it
+            return new RouterResponse(true, {})
+        }
+
+        return new RouterResponse(false, 'Не все игроки готовы начать игру')
     }
 }
 

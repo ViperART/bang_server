@@ -16,7 +16,11 @@ class LobbyRegistry {
     findAll() {
         let lobbies = [];
         for (let id in this.lobbies) {
-            lobbies.push({id, host: this.lobbies[id].host.getNickname()});
+            lobbies.push({
+                id,
+                host: this.lobbies[id].host.getNickname(),
+                clientsCount: this.lobbies[id].getClientsCount()
+            });
         }
 
         return lobbies;
