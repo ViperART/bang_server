@@ -1,24 +1,37 @@
 import Player, {PlayerRole} from "../player";
 import {getHeroes} from "../data/heroes";
 import {cardsList} from "../data/cards";
-import Weapon from "../cards/weapon";
 import CardDealer from "./cardDealer";
+import PlayersList from "./playersList";
+
+
 
 class GameSession {
     constructor(id, clients) {
         this.id = id;
-        this.players = clients.map(client => new Player(client));
+        this.players = new PlayersList(clients);
         this.cards = new CardDealer(cardsList.shuffle());
+
+        this._prepare();
 
         this.state = null;
         this.currentPlayer = null;
     }
 
+    setCurrentPlayer(player) {
+        this.currentPlayer = player;
+    }
+
+    getGameViewForClient(client) {
+
+    }
+
     _prepare() {
         this._assignRolesToPlayers();
         this._assignHeroesToPlayers();
-        this._assignWeaponsToPlayers();
         this._giveCardsToPlayers();
+
+        this.setCurrentPlayer(this.players.getSheriff());
     }
 
     _assignRolesToPlayers() {
@@ -32,35 +45,32 @@ class GameSession {
         };
 
         let roles = basePlayersRoles.concat(rolesByPlayersCount[this.players.length]).shuffle();
+        let players = this.players.getAll();
 
-        for (let i in this.players) {
-            if (this.players.hasOwnProperty(i)) {
-                this.players[i].setRole(roles[i]);
+        for (let i in players) {
+            if (players.hasOwnProperty(i)) {
+                players[i].setRole(roles[i]);
             }
         }
     }
 
     _assignHeroesToPlayers() {
-        let shuffledHeroes = getHeroes(this.players.length);
-        for (let i in this.players) {
-            if (this.players.hasOwnProperty(i)) {
-                this.players[i].setHero(shuffledHeroes[i]);
+        let players = this.players.getAll();
+        let shuffledHeroes = getHeroes(players.length);
+
+        for (let i in players) {
+            if (players.hasOwnProperty(i)) {
+                players[i].setHero(shuffledHeroes[i]);
             }
         }
     }
 
-    _assignWeaponsToPlayers() {
-        for (let i in this.players) {
-            if (this.players.hasOwnProperty(i)) {
-                this.players[i].setWeapon(new Weapon('Кольт .45', 1, 1, 1));
-            }
-        }
-    }
 
     _giveCardsToPlayers() {
-        for (let i in this.players) {
-            if (this.players.hasOwnProperty(i)) {
-                this.players[i].setCards(this.cards.take(this.players[i].getHealthPoints()));
+        let players = this.players.getAll();
+        for (let i in players) {
+            if (players.hasOwnProperty(i)) {
+                players[i].setCards(this.cards.take(players[i].getHealthPoints()));
             }
         }
     }

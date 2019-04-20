@@ -13,6 +13,7 @@ class Player {
         this.hero = {};
         this.cards = [];
         this.weapon = null;
+        this.buffs = [];
         this.role = null;
 
         this.maxHP = 0;
@@ -30,6 +31,38 @@ class Player {
         this.hero = hero;
         this.maxHP += hero.getHealthPoints();
         this.setHealthPoints(this.maxHP);
+    }
+
+    getHero() {
+        return this.hero;
+    }
+
+    getWeapon() {
+        return this.weapon;
+    }
+
+    getCards() {
+        return this.cards;
+    }
+
+    getRole() {
+        return this.role
+    }
+
+    getBuffs() {
+        return this.buffs;
+    }
+
+    getNickname() {
+        return this.client.getNickname();
+    }
+
+    isSheriff() {
+        return this.role === PlayerRole.SHERIFF;
+    }
+
+    isMe(client) {
+        return this.client === client;
     }
 
     setHealthPoints(hp) {
