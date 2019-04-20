@@ -75,8 +75,8 @@ export const cardsList = [
 
     new ActionCard('Бах!', CardSuit.SPADES, CardRank.ACE, ActionCardType.BANG),
 
-    new ActionCard('Дилижанс', CardSuit.SPADES, 9, ActionCardType),
-    new ActionCard('Дилижанс', CardSuit.SPADES, 9, ActionCardType),
+    new ActionCard('Дилижанс', CardSuit.SPADES, 9, ActionCardType.DILIGENZA),
+    new ActionCard('Дилижанс', CardSuit.SPADES, 9, ActionCardType.DILIGENZA),
 
     new ActionCard('Уэллс-Фарго', CardSuit.HEARTS, 3, ActionCardType.WELLS_FARGO),
 

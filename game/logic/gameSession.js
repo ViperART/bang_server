@@ -1,14 +1,14 @@
 import Player, {PlayerRole} from "../player";
 import {getHeroes} from "../data/heroes";
+import {cardsList} from "../data/cards";
+import Weapon from "../cards/weapon";
+import CardDealer from "./cardDealer";
 
 class GameSession {
     constructor(id, clients) {
         this.id = id;
-
         this.players = clients.map(client => new Player(client));
-
-        this.cards = [];
-        this.usedCards = [];
+        this.cards = new CardDealer(cardsList.shuffle());
 
         this.state = null;
         this.currentPlayer = null;
@@ -17,6 +17,8 @@ class GameSession {
     _prepare() {
         this._assignRolesToPlayers();
         this._assignHeroesToPlayers();
+        this._assignWeaponsToPlayers();
+        this._giveCardsToPlayers();
     }
 
     _assignRolesToPlayers() {
@@ -47,21 +49,21 @@ class GameSession {
         }
     }
 
+    _assignWeaponsToPlayers() {
+        for (let i in this.players) {
+            if (this.players.hasOwnProperty(i)) {
+                this.players[i].setWeapon(new Weapon('Кольт .45', 1, 1, 1));
+            }
+        }
+    }
+
+    _giveCardsToPlayers() {
+        for (let i in this.players) {
+            if (this.players.hasOwnProperty(i)) {
+                this.players[i].setCards(this.cards.take(this.players[i].getHealthPoints()));
+            }
+        }
+    }
 }
 
 export default GameSession;
-
-/*
-Подготовка:
-
-1. Раздать всем роли по правилам игры (done)
-2. Инициализация колоды персов и её перемешка
-3. Назначение персов на игроков (с их характеристиками)
-4. Перемешка основного пула карт
-5. Раздача карт игрокам в соотвествии со здоровьем
-
-
-
-
-
- */

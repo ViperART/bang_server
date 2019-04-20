@@ -1,6 +1,3 @@
-import Weapon from "./cards/weapon";
-import {CardRank, CardSuit} from "./data/cards";
-
 export const PlayerRole = {
     SHERIFF: 0,
     DEPUTY: 1,
@@ -15,7 +12,7 @@ class Player {
         this.hp = 0;
         this.hero = {};
         this.cards = [];
-        this.weapon = new Weapon('Colt .45', CardSuit.CLUBS, CardRank.ACE, 1);
+        this.weapon = null;
         this.role = null;
 
         this.maxHP = 0;
@@ -37,6 +34,18 @@ class Player {
 
     setHealthPoints(hp) {
         this.hp = hp;
+    }
+
+    getHealthPoints() {
+        return this.hp;
+    }
+
+    setWeapon(weapon) {
+        this.weapon = weapon;
+    }
+
+    setCards(cards) {
+        this.cards = cards;
     }
 }
 
