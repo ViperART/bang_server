@@ -1,9 +1,14 @@
 class Hero {
-    
-    constructor() {
-        this.hp = 0;
-        this.name = 'Default hero name';
+
+    constructor(name, type, hp) {
+        this.name = name;
+        this.type = type;
+        this.hp = hp;
     }
 
-
+    getHealthPoints() {
+        return this.hp;
+    }
 }
+
+export default Hero;

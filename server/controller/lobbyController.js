@@ -81,7 +81,7 @@ class LobbyController {
         if (lobby.isReadyForStart()) {
             //lobby.startGame()
             // notify about game start
-            // TODO: start game and send broadcast about it
+            // TODO: start game and send broadcast about it  AND CHECK CLIENT IS HOST
             return new RouterResponse(true, {})
         }
 

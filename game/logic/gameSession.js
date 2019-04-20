@@ -1,4 +1,5 @@
 import Player, {PlayerRole} from "../player";
+import {getHeroes} from "../data/heroes";
 
 class GameSession {
     constructor(id, clients) {
@@ -15,6 +16,7 @@ class GameSession {
 
     _prepare() {
         this._assignRolesToPlayers();
+        this._assignHeroesToPlayers();
     }
 
     _assignRolesToPlayers() {
@@ -27,16 +29,22 @@ class GameSession {
             7: [PlayerRole.DEPUTY, PlayerRole.OUTLAW, PlayerRole.DEPUTY],
         };
 
-        let roles = basePlayersRoles.concat(rolesByPlayersCount[this.players.length]);
-        roles.sort(this._compareRandom);
+        let roles = basePlayersRoles.concat(rolesByPlayersCount[this.players.length]).shuffle();
 
         for (let i in this.players) {
-            this.players[i].setRole(roles[i]);
+            if (this.players.hasOwnProperty(i)) {
+                this.players[i].setRole(roles[i]);
+            }
         }
     }
 
-    _compareRandom(a, b) {
-        return Math.random() - 0.5;
+    _assignHeroesToPlayers() {
+        let shuffledHeroes = getHeroes(this.players.length);
+        for (let i in this.players) {
+            if (this.players.hasOwnProperty(i)) {
+                this.players[i].setHero(shuffledHeroes[i]);
+            }
+        }
     }
 
 }
