@@ -12,7 +12,7 @@ export const BuffType = {
 class Buff extends Card {
     constructor(name, suit, rank, buffType) {
         super(name, suit, rank, CardType.BUFF);
-        this.type = buffType;
+        this.buffType = buffType;
     }
 }
 

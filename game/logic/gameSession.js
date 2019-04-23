@@ -11,11 +11,9 @@ class GameSession {
         this.id = id;
         this.players = new PlayersList(clients);
         this.cards = new CardDealer(cardsList.shuffle());
+        this.currentPlayer = null;
 
         this._prepare();
-
-        this.state = null;
-        this.currentPlayer = null;
     }
 
     setCurrentPlayer(player) {
@@ -23,7 +21,11 @@ class GameSession {
     }
 
     getGameViewForClient(client) {
-
+        return {
+            gameId: this.id,
+            currentPlayerId: this.currentPlayer.getId(),
+            players: this.players.getPlayerView(client)
+        };
     }
 
     _prepare() {

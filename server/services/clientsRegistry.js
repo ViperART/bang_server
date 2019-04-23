@@ -12,8 +12,10 @@ class ClientsRegistry {
 
     find(ws) {
         for (let i in this.clients) {
-            if (ws.id === this.clients[i].getId()) {
-                return this.clients[i];
+            if (this.clients.hasOwnProperty(i)) {
+                if (ws.id === this.clients[i].getId()) {
+                    return this.clients[i];
+                }
             }
         }
 

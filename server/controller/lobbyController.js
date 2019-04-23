@@ -78,14 +78,20 @@ class LobbyController {
             return new RouterResponse(false, 'Lobby not found');
         }
 
-        if (lobby.isReadyForStart()) {
-            //lobby.startGame()
-            // notify about game start
-            // TODO: start game and send broadcast about it  AND CHECK CLIENT IS HOST
-            return new RouterResponse(true, {})
+        if (!lobby.isReadyForStart()) {
+            return new RouterResponse(false, 'Не все игроки готовы начать игру')
         }
 
-        return new RouterResponse(false, 'Не все игроки готовы начать игру')
+        if (!lobby.isHost(client)) {
+            return new RouterResponse(false, 'Вы не хост!')
+        }
+
+        let gameSession = this.app.get('games').create(lobby.getClients());
+        this.app.get('sender').sendForeach('game', 'onStart', (recipient) => {
+            return gameSession.getGameViewForClient(recipient);
+        }, lobby.getClients());
+
+        return new RouterResponse(true, {})
     }
 }
 

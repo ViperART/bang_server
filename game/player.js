@@ -19,6 +19,10 @@ class Player {
         this.maxHP = 0;
     }
 
+    getId() {
+        return this.client.getId()
+    }
+
     setRole(role) {
         this.role = role;
 

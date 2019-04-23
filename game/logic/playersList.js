@@ -20,12 +20,14 @@ class PlayersList {
 
                 // TODO: distance!!!!!!
                 let info = {
+                    id: player.getId(),
                     hp: player.getHealthPoints(),
                     buffs: player.getBuffs(),
                     hero: player.getHero(),
                     weapon: player.getWeapon(),
                     cardsCount: player.getCards().length,
-                    nickname: player.getNickname()
+                    nickname: player.getNickname(),
+                    isSheriff: player.isSheriff(),
                 };
 
                 if (player.isMe(client)) {

@@ -19,17 +19,23 @@ class GameLobby {
             return {
                 nickname: client.getNickname(),
                 id: client.getId(),
-                isHost: client === this.host,
+                isHost: this.isHost(client),
                 isReady: this.readyTable[client.getId()]
             }
         })
     }
 
+    isHost(client) {
+        return this.host === client;
+    }
+
     hasClient(client) {
         let clients = this.getClients();
         for (let i in clients) {
-            if (clients[i] === client) {
-                return true;
+            if (clients.hasOwnProperty(i)) {
+                if (clients[i] === client) {
+                    return true;
+                }
             }
         }
 
@@ -52,8 +58,10 @@ class GameLobby {
         let clients = this.getClients();
 
         for (let i in clients) {
-            if (client.getId() === clients[i].getId()) {
-                return false;
+            if (clients.hasOwnProperty(i)) {
+                if (client.getId() === clients[i].getId()) {
+                    return false;
+                }
             }
         }
 
@@ -82,8 +90,10 @@ class GameLobby {
         }
 
         for (let i in this.readyTable) {
-            if (this.readyTable[i] === false) {
-                return false;
+            if (this.readyTable.hasOwnProperty(i)) {
+                if (this.readyTable[i] === false) {
+                    return false;
+                }
             }
         }
 

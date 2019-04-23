@@ -1,3 +1,5 @@
+import GameSession from "../../game/logic/gameSession";
+
 class GameRegistry {
     
     constructor(app) {
@@ -7,7 +9,7 @@ class GameRegistry {
 
     create(clients) {
         const gameId = this.app.get('idGenerator').generate();
-        this.games[gameId] = 1; // TODO: gameSession
+        this.games[gameId] = new GameSession(gameId, clients);
         return this.games[gameId];
     }
 

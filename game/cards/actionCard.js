@@ -20,7 +20,7 @@ export const ActionCardType = {
 class ActionCard extends Card {
     constructor(name, suit, rank, actionType) {
         super(name, suit, rank, CardType.ACTION);
-        this.type = actionType;
+        this.actionType = actionType;
     }
 }
 
