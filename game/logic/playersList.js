@@ -11,6 +11,50 @@ class PlayersList {
         return this.players;
     }
 
+    findById(id) {
+        for (let i in this.players) {
+            if (this.players.hasOwnProperty(i)) {
+                let player = this.players[i];
+                if (player.getId() === id) {
+                    return player;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    hasWeapon(weapon) {
+        for (let i in this.players) {
+            if (this.players.hasOwnProperty(i)) {
+                let player = this.players[i];
+                if (weapon.equals(player.getWeapon())) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    hasBuff(buff) {
+        for (let i in this.players) {
+            if (this.players.hasOwnProperty(i)) {
+                let player = this.players[i];
+                let buffs = player.getBuffs();
+                for (let j in buffs) {
+                    if (buffs.hasOwnProperty(j)) {
+                        if (buff.equals(buffs[j])) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
     getPlayerView(client) {
         let view = [];
 

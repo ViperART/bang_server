@@ -88,8 +88,8 @@ export const cardsList = [
     new ActionCard('Индейцы', CardSuit.DIAMONDS, CardRank.KING, ActionCardType.INDIANS),
 
     new ActionCard('Дуэль', CardSuit.CLUBS, 8, ActionCardType.DUEL),
-    new ActionCard('Дуэль', CardSuit.CLUBS, CardRank.JACK, ActionCardType.DUEL),
-    new ActionCard('Дуэль', CardSuit.CLUBS, CardRank.QUEEN, ActionCardType.DUEL),
+    new ActionCard('Дуэль', CardSuit.SPADES, CardRank.JACK, ActionCardType.DUEL),
+    new ActionCard('Дуэль', CardSuit.DIAMONDS, CardRank.QUEEN, ActionCardType.DUEL),
 
     new ActionCard('Паника!', CardSuit.HEARTS, CardRank.QUEEN, ActionCardType.PANIC),
     new ActionCard('Паника!', CardSuit.HEARTS, CardRank.ACE, ActionCardType.PANIC),
@@ -111,8 +111,9 @@ export const cardsList = [
     new ActionCard('Промах!', CardSuit.CLUBS, 3, ActionCardType.MISSED),
     new ActionCard('Промах!', CardSuit.CLUBS, 10, ActionCardType.MISSED),
     new ActionCard('Промах!', CardSuit.CLUBS, CardRank.ACE, ActionCardType.MISSED),
+    new ActionCard('Промах!', CardSuit.CLUBS, CardRank.KING, ActionCardType.MISSED),
     new ActionCard('Промах!', CardSuit.CLUBS, CardRank.QUEEN, ActionCardType.MISSED),
-    new ActionCard('Промах!', CardSuit.CLUBS, 2, ActionCardType.MISSED),
+    new ActionCard('Промах!', CardSuit.SPADES, 2, ActionCardType.MISSED),
     new ActionCard('Промах!', CardSuit.SPADES, 3, ActionCardType.MISSED),
     new ActionCard('Промах!', CardSuit.SPADES, 4, ActionCardType.MISSED),
     new ActionCard('Промах!', CardSuit.SPADES, 5, ActionCardType.MISSED),

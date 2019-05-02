@@ -1,4 +1,5 @@
 import RouterResponse from "../routerResponse";
+import Client from './../entities/client';
 
 class LobbyController {
 
@@ -90,6 +91,22 @@ class LobbyController {
         this.app.get('sender').sendForeach('game', 'onStart', (recipient) => {
             return gameSession.getGameViewForClient(recipient);
         }, lobby.getClients());
+
+        return new RouterResponse(true, {})
+    }
+
+    gameDebug(params, client) {
+        let clients = [
+            client,
+            new Client('ViperART', {id: 'testId'}),
+            new Client('dekamaru', {id: 'testId2'}),
+            new Client('MarsAlex51', {id: 'testId3'})
+        ];
+
+        let gameSession = this.app.get('games').create(clients);
+        this.app.get('sender').sendForeach('game', 'onStart', (recipient) => {
+            return gameSession.getGameViewForClient(recipient);
+        }, [client]);
 
         return new RouterResponse(true, {})
     }

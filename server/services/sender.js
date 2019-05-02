@@ -19,11 +19,13 @@ class Sender {
         for (let i in recipients) {
             if (recipients.hasOwnProperty(i)) {
                 let response = callback(recipients[i]);
-                recipients[i].getSocket().send(JSON.stringify({
-                    success: true,
-                    type: controller + '.' + method,
-                    response
-                }))
+                if (!recipients[i].getId().startsWith('test')) {
+                    recipients[i].getSocket().send(JSON.stringify({
+                        success: true,
+                        type: controller + '.' + method,
+                        response
+                    }))
+                }
             }
         }
     }

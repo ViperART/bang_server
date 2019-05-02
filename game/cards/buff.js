@@ -14,6 +14,10 @@ class Buff extends Card {
         super(name, suit, rank, CardType.BUFF);
         this.buffType = buffType;
     }
+
+    isJail() {
+        return this.buffType === BuffType.JAIL;
+    }
 }
 
 export default Buff;

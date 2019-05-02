@@ -20,7 +20,11 @@ class Player {
     }
 
     getId() {
-        return this.client.getId()
+        return this.getClient().getId()
+    }
+
+    getClient() {
+        return this.client;
     }
 
     setRole(role) {
@@ -45,6 +49,10 @@ class Player {
         return this.weapon;
     }
 
+    setWeapon(weapon) {
+        this.weapon = weapon;
+    }
+
     getCards() {
         return this.cards;
     }
@@ -55,6 +63,10 @@ class Player {
 
     getBuffs() {
         return this.buffs;
+    }
+
+    addBuff(buff) {
+        this.buffs.push(buff);
     }
 
     getNickname() {
@@ -77,12 +89,28 @@ class Player {
         return this.hp;
     }
 
-    setWeapon(weapon) {
-        this.weapon = weapon;
-    }
-
     setCards(cards) {
         this.cards = cards;
+    }
+
+    addCard(card) {
+        this.cards.push(card);
+    }
+
+    getCard(cardIndex) {
+        if (!this.cards[cardIndex]) {
+            return false;
+        }
+
+        return this.cards[cardIndex];
+    }
+
+    takeCard(cardIndex) {
+        if (!this.cards[cardIndex]) {
+            return false;
+        }
+
+        return this.cards.splice(cardIndex, 1);
     }
 }
 
