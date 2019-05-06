@@ -3,6 +3,7 @@ import {getHeroes} from "../data/heroes";
 import {cardsList} from "../data/cards";
 import CardDealer from "./cardDealer";
 import PlayersList from "./playersList";
+import DistanceChecker from "./distanceChecker";
 
 class GameSession {
     constructor(id, clients) {
@@ -37,6 +38,9 @@ class GameSession {
             this.currentPlayer.takeCard(cardIndex); // remove card from player hand
         }
 
+        // TODO: show under player icon, two distances
+        // TODO: check distances on client same as server
+
         if (card.isBuff()) {
             if (this.players.hasBuff(card)) {
                 throw 'Buff ' + card.getName() + ' exists on table';
@@ -57,7 +61,86 @@ class GameSession {
                 this.currentPlayer.addBuff(card);
             }
 
-            this.currentPlayer.takeCard(cardIndex); // remove card from player hand
+             this.currentPlayer.takeCard(cardIndex); // remove card from player hand
+        }
+
+        if (card.isAction()) {
+
+            let receiver = this.players.findById(receiverPlayerId);
+
+            if (card.isBang() && true) { //TODO проверка на ответ "Мимо"
+                if (!DistanceChecker.canReachTarget(this.currentPlayer, receiver, this.players.getAll())) {
+                    throw 'Вы не можете достать до игрока!';
+                }
+
+                receiver.loseHealthPoints(1);
+            }
+
+            if (card.isPanic()) {
+
+                if (receiver.getAvailableCards().length === 0) {
+                    throw 'У этого игрока нет доступных для изъятия карт'
+                }
+
+                this.currentPlayer.addCard(receiver.takeCard(0)); //TODO Выбор карты
+            }
+
+            if (card.isDiligenza()) {
+                this._giveCardsToPlayerFromDeck(this.currentPlayer, 2);
+            }
+
+            if (card.isWellsFargo()) {
+                this._giveCardsToPlayerFromDeck(this.currentPlayer, 3);
+            }
+
+            if (card.isGatling() && true) {  //TODO проверка на ответ "Мимо"
+                this.players.getAll().forEach(player => {
+                    if (player !== this.currentPlayer) {
+                        player.loseHealthPoints(1)
+                    }
+                });
+            }
+
+            if (card.isIndians() && true) {   //TODO Проверка на сброс Бэнга
+                this.players.getAll().forEach(player => {
+                    if (player !== this.currentPlayer) {
+                        player.loseHealthPoints(1)
+                    }
+                });
+            }
+
+            if (card.isSaloon()) {
+                this.players.getAll().forEach(player => {
+                    player.addHealthPoints(1);
+                });
+            }
+
+            if (card.isBeer()) {
+                if (this.currentPlayer.getHealthPoints() === this.currentPlayer.getMaxHealthPoints()) {
+                    throw 'У Вас уже максимальное количество здоровья'
+                }
+
+                this.currentPlayer.addHealthPoints(1);
+            }
+
+            if (card.isCatBalou()) {
+
+                if (receiver.getAvailableCards().length === 0) {
+                    throw 'У этого игрока нет доступных для изъятия карт'
+                }
+
+                this.deck.discard(receiver.takeCard(0)); //TODO Выбор карты
+            }
+
+            if (card.isShop()) {
+                let shopSelection = this.deck.takeMany(this.players.getAll().length);
+                for (let i = 0; i < shopSelection.length; i++) {
+                    this.players.getAll()[i].addCard(shopSelection[i]); //TODO Выбор карты из магазина
+                }
+
+            }
+
+            this.deck.discard(this.currentPlayer.takeCard(cardIndex));  // remove card from player hand and add it to used cards
         }
     }
 

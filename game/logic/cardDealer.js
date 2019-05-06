@@ -31,6 +31,10 @@ class CardDealer {
     getUsedCardsCount() {
         return this.usedCards.length;
     }
+
+    discard(card) {
+        this.usedCards.push(card);
+    }
 }
 
 

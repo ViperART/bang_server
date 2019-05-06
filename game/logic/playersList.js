@@ -101,7 +101,7 @@ class PlayersList {
     _initWeapons() {
         for (let i in this.players) {
             if (this.players.hasOwnProperty(i)) {
-                this.players[i].setWeapon(new Weapon('Кольт .45', 1, 1, 1));
+                this.players[i].setWeapon(Weapon.createDefaultWeapon());
             }
         }
     }

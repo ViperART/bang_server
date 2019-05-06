@@ -22,6 +22,54 @@ class ActionCard extends Card {
         super(name, suit, rank, CardType.ACTION);
         this.actionType = actionType;
     }
+
+    isBang() {
+        return this.actionType === ActionCardType.BANG;
+    }
+
+    isMissed() {
+        return this.actionType === ActionCardType.MISSED;
+    }
+
+    isDiligenza() {
+        return this.actionType === ActionCardType.DILIGENZA;
+    }
+
+    isWellsFargo() {
+        return this.actionType === ActionCardType.WELLS_FARGO;
+    }
+
+    isGatling() {
+        return this.actionType === ActionCardType.GATLING;
+    }
+
+    isSaloon() {
+        return this.actionType === ActionCardType.SALOON;
+    }
+
+    isIndians() {
+        return this.actionType === ActionCardType.INDIANS;
+    }
+
+    isDuel() {
+        return this.actionType === ActionCardType.DUEL;
+    }
+
+    isPanic() {
+        return this.actionType === ActionCardType.PANIC;
+    }
+
+    isCatBalou() {
+        return this.actionType === ActionCardType.CAT_BALOU;
+    }
+
+    isBeer() {
+        return this.actionType === ActionCardType.BEER;
+    }
+
+    isShop() {
+        return this.actionType === ActionCardType.SHOP;
+    }
 }
 
 export default ActionCard;

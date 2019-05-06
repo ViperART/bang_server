@@ -18,6 +18,14 @@ class Buff extends Card {
     isJail() {
         return this.buffType === BuffType.JAIL;
     }
+
+    isMustang() {
+        return this.buffType === BuffType.MUSTANG;
+    }
+
+    isScope() {
+        return this.buffType === BuffType.SCOPE;
+    }
 }
 
 export default Buff;

@@ -57,6 +57,15 @@ class Player {
         return this.cards;
     }
 
+    getAvailableCards() {
+        let cards = [...this.getCards(), ...this.getBuffs()]
+        if (!this.getWeapon().isDefault()) {
+            cards.push(this.getWeapon());
+        }
+
+        return cards;
+    }
+
     getRole() {
         return this.role
     }
@@ -89,6 +98,22 @@ class Player {
         return this.hp;
     }
 
+    getMaxHealthPoints() {
+        return this.maxHP;
+    }
+
+    loseHealthPoints(amount) {
+        this.hp -= amount;
+    }
+
+    addHealthPoints(amount) {
+        if (this.getHealthPoints() >= this.getMaxHealthPoints()) {
+            return;
+        }
+
+        this.hp += amount;
+    }
+
     setCards(cards) {
         this.cards = cards;
     }
@@ -110,7 +135,7 @@ class Player {
             return false;
         }
 
-        return this.cards.splice(cardIndex, 1);
+        return this.cards.splice(cardIndex, 1)[0];
     }
 }
 
