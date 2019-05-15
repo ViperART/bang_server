@@ -10,6 +10,10 @@ class ClientsRegistry {
         this.clients.push(client);
     }
 
+    findAll() {
+        return this.clients;
+    }
+
     find(ws) {
         for (let i in this.clients) {
             if (this.clients.hasOwnProperty(i)) {

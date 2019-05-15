@@ -17,8 +17,36 @@ class GameController {
             return new RouterResponse(false, 'Сейчас не Ваш ход');
         }
 
+        if (!params.receiverPlayerId) {
+            params.receiverPlayerId = null;
+        }
+
         try {
             game.throwCard(params.cardIndex, params.receiverPlayerId);
+        } catch (errorMessage) {
+            return new RouterResponse(false, errorMessage);
+        }
+
+        this.app.get('sender').sendForeach('game', 'onChange', (recipient) => {
+            return game.getGameViewForClient(recipient);
+        }, game.getClients());
+
+        return new RouterResponse(true, {});
+    }
+
+    skip(params, client) {
+        let game = this.app.get('games').findById(params.gameId);
+
+        if (game === null) {
+            return new RouterResponse(false, 'Игра не найдена');
+        }
+
+        if (!game.isCurrentPlayer(client)) {
+            return new RouterResponse(false, 'Сейчас не Ваш ход');
+        }
+
+        try {
+            game.skip();
         } catch (errorMessage) {
             return new RouterResponse(false, errorMessage);
         }

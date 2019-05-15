@@ -2,7 +2,8 @@ import Card from "./card";
 import {CardType} from "../data/cards";
 
 export const DEFAULT_WEAPON_NAME = 'Кольт .45';
- 
+export const VOLCANIC_WEAPON_NAME = 'Ярость';
+
 class Weapon extends Card {
     constructor(name, suit, rank, weaponRange) {
         super(name, suit, rank, CardType.WEAPON);
@@ -15,6 +16,10 @@ class Weapon extends Card {
 
     isDefault() {
         return this.name === DEFAULT_WEAPON_NAME;
+    }
+
+    isVolcanic() {
+        return this.name === VOLCANIC_WEAPON_NAME;
     }
 
     getRange() {

@@ -1,3 +1,5 @@
+import {HeroType} from "../data/heroes";
+
 class Hero {
 
     constructor(name, type, hp) {
@@ -8,6 +10,10 @@ class Hero {
 
     getHealthPoints() {
         return this.hp;
+    }
+
+    isWilly() {
+        return this.type === HeroType.WILLY;
     }
 }
 

@@ -4,6 +4,7 @@ import {cardsList} from "../data/cards";
 import CardDealer from "./cardDealer";
 import PlayersList from "./playersList";
 import DistanceChecker from "./distanceChecker";
+import BangState from "../state/bang";
 
 class GameSession {
     constructor(id, clients) {
@@ -12,135 +13,71 @@ class GameSession {
         this.deck = new CardDealer([...cardsList].shuffle());
         this.currentPlayer = null;
 
-        this.receiver = null;
-
         this._prepare();
         this.turnStart();
+
+        this.state = null;
     }
 
     turnStart() {
         this._giveCardsToPlayerFromDeck(this.currentPlayer, 2);
+        this.turnState = {
+            isBangThrown: false
+        }
+    }
+
+    skip() {
+        if (this.state !== null && this.state.hasEnded()) {
+            if (this.state instanceof BangState) {
+                this.turnState.isBangThrown = true;
+            }
+
+            this.state = null;
+        }
+
+        if (this.state === null) {
+            throw 'Скипнули ответ когда нет состояния?'
+        }
+
+        this.state.update(null);
+        this.currentPlayer = this.state.getCurrentPlayer();
     }
 
     throwCard(cardIndex, receiverPlayerId) {
+        if (this.state !== null && this.state.hasEnded()) {
+
+            if (this.state instanceof BangState) {
+                this.turnState.isBangThrown = true;
+            }
+
+            this.state = null;
+        }
+
         let card = this.currentPlayer.getCard(cardIndex);
 
         if (!card) {
             throw 'Card ' + cardIndex + ' not found in current player';
         }
 
-        if (card.isWeapon()) {
-            if (this.players.hasWeapon(card)) {
-                throw 'Weapon ' + card.getName() + ' exists on table';
-            }
+        // TODO: check for barrel on receiver, or check for miss card
 
-            this.currentPlayer.setWeapon(card);
-            this.currentPlayer.takeCard(cardIndex); // remove card from player hand
+        if (this.state !== null) {
+            this.state.update(card);
+            this.currentPlayer = this.state.getCurrentPlayer();
+
+            return;
         }
 
-        // TODO: show under player icon, two distances
-        // TODO: check distances on client same as server
+        if (card.isWeapon()) {
+            this._handleWeaponCard(card, cardIndex);
+        }
 
         if (card.isBuff()) {
-            if (this.players.hasBuff(card)) {
-                throw 'Buff ' + card.getName() + ' exists on table';
-            }
-
-            if (card.isJail()) {
-                if (!receiverPlayerId) {
-                    throw 'receiverPlayerId not set!';
-                }
-
-                let receiver = this.players.findById(receiverPlayerId);
-                if (receiver.isSheriff()) {
-                    throw 'Нельзя посадить шерифа в тюрьму';
-                }
-
-                receiver.addBuff(card);
-            } else {
-                this.currentPlayer.addBuff(card);
-            }
-
-             this.currentPlayer.takeCard(cardIndex); // remove card from player hand
+            this._handleBuffCard(card, cardIndex, receiverPlayerId);
         }
 
         if (card.isAction()) {
-
-            let receiver = this.players.findById(receiverPlayerId);
-
-            if (card.isBang() && true) { //TODO проверка на ответ "Мимо"
-                if (!DistanceChecker.canReachTarget(this.currentPlayer, receiver, this.players.getAll())) {
-                    throw 'Вы не можете достать до игрока!';
-                }
-
-                receiver.loseHealthPoints(1);
-            }
-
-            if (card.isPanic()) {
-
-                if (receiver.getAvailableCards().length === 0) {
-                    throw 'У этого игрока нет доступных для изъятия карт'
-                }
-
-                this.currentPlayer.addCard(receiver.takeCard(0)); //TODO Выбор карты
-            }
-
-            if (card.isDiligenza()) {
-                this._giveCardsToPlayerFromDeck(this.currentPlayer, 2);
-            }
-
-            if (card.isWellsFargo()) {
-                this._giveCardsToPlayerFromDeck(this.currentPlayer, 3);
-            }
-
-            if (card.isGatling() && true) {  //TODO проверка на ответ "Мимо"
-                this.players.getAll().forEach(player => {
-                    if (player !== this.currentPlayer) {
-                        player.loseHealthPoints(1)
-                    }
-                });
-            }
-
-            if (card.isIndians() && true) {   //TODO Проверка на сброс Бэнга
-                this.players.getAll().forEach(player => {
-                    if (player !== this.currentPlayer) {
-                        player.loseHealthPoints(1)
-                    }
-                });
-            }
-
-            if (card.isSaloon()) {
-                this.players.getAll().forEach(player => {
-                    player.addHealthPoints(1);
-                });
-            }
-
-            if (card.isBeer()) {
-                if (this.currentPlayer.getHealthPoints() === this.currentPlayer.getMaxHealthPoints()) {
-                    throw 'У Вас уже максимальное количество здоровья'
-                }
-
-                this.currentPlayer.addHealthPoints(1);
-            }
-
-            if (card.isCatBalou()) {
-
-                if (receiver.getAvailableCards().length === 0) {
-                    throw 'У этого игрока нет доступных для изъятия карт'
-                }
-
-                this.deck.discard(receiver.takeCard(0)); //TODO Выбор карты
-            }
-
-            if (card.isShop()) {
-                let shopSelection = this.deck.takeMany(this.players.getAll().length);
-                for (let i = 0; i < shopSelection.length; i++) {
-                    this.players.getAll()[i].addCard(shopSelection[i]); //TODO Выбор карты из магазина
-                }
-
-            }
-
-            this.deck.discard(this.currentPlayer.takeCard(cardIndex));  // remove card from player hand and add it to used cards
+            this._handleActionCard(card, cardIndex, receiverPlayerId);
         }
     }
 
@@ -165,9 +102,162 @@ class GameSession {
             gameId: this.id,
             currentPlayerId: this.currentPlayer.getId(),
             players: this.players.getPlayerView(client),
+            state: this.state ? this.state.getView() : null,
             cardsLeft: this.deck.getCardsCount(),
-            cardsUsed: this.deck.getUsedCardsCount()
+            cardsUsed: this.deck.getUsedCardsCount(),
+            attackDistances: this._getAttackDistances(),
+            defenseDistances: this._getDefenseDistances(),
         };
+    }
+
+    _handleWeaponCard(card, cardIndex) {
+        if (this.players.hasWeapon(card)) {
+            throw card.getName() + ' уже присутствует на столе';
+        }
+
+        this.currentPlayer.setWeapon(card);
+        this.currentPlayer.takeCard(cardIndex); // remove card from player hand
+    }
+
+    _handleBuffCard(card, cardIndex, receiverPlayerId) {
+        if (this.players.hasBuff(card)) {
+            throw card.getName() + ' уже присутствует на столе';
+        }
+
+        if (card.isJail()) {
+            if (!receiverPlayerId) {
+                throw 'receiverPlayerId not set!';
+            }
+
+            let receiver = this.players.findById(receiverPlayerId);
+            if (receiver.isSheriff()) {
+                throw 'Нельзя посадить шерифа в тюрьму';
+            }
+
+            receiver.addBuff(card);
+        } else {
+            this.currentPlayer.addBuff(card);
+        }
+
+        this.currentPlayer.takeCard(cardIndex); // remove card from player hand
+    }
+
+    _handleActionCard(card, cardIndex, receiverPlayerId) {
+        let receiver = this.players.findById(receiverPlayerId);
+        if (card.isBang()) {
+
+            if (this.turnState.isBangThrown && !this.currentPlayer.canThrowUnlimitedBangs()) {
+                throw 'Вы не можете разыграть более одной карты "Бах!" в ход'
+            }
+
+            if (!DistanceChecker.canReachTarget(this.currentPlayer, receiver, this.players.getAll())) {
+                throw 'Вы не можете достать до этого игрока';
+            }
+
+            if (this.state !== null) {
+                throw 'Кинули бэнг когда уже есть активное состояние?'
+            }
+
+            this.deck.discard(this.currentPlayer.takeCard(cardIndex));
+            this.state = new BangState(this.deck, this.currentPlayer, receiver, card);
+            this.currentPlayer = this.state.getCurrentPlayer();
+
+            return;
+        }
+
+        if (card.isPanic()) {
+
+            if (!DistanceChecker.canReachTarget(this.currentPlayer, receiver, this.players.getAll())) {
+                throw 'Вы не можете достать до этого игрока';
+            }
+
+            if (receiver.getAvailableCards().length === 0) {
+                throw 'У этого игрока нет доступных для изъятия карт'
+            }
+
+            this.currentPlayer.addCard(receiver.takeCard(0)); //TODO Выбор карты
+        }
+
+        if (card.isDiligenza()) {
+            this._giveCardsToPlayerFromDeck(this.currentPlayer, 2);
+        }
+
+        if (card.isWellsFargo()) {
+            this._giveCardsToPlayerFromDeck(this.currentPlayer, 3);
+        }
+
+        if (card.isGatling() && true) {  //TODO проверка на ответ "Мимо"
+            this.players.getAll().forEach(player => {
+                if (player !== this.currentPlayer) {
+                    player.loseHealthPoints(1)
+                }
+            });
+        }
+
+        if (card.isIndians() && true) {   //TODO Проверка на сброс Бэнга
+            this.players.getAll().forEach(player => {
+                if (player !== this.currentPlayer) {
+                    player.loseHealthPoints(1)
+                }
+            });
+        }
+
+        if (card.isSaloon()) {
+            this.players.getAll().forEach(player => {
+                player.addHealthPoints(1);
+            });
+        }
+
+        if (card.isBeer()) {
+            if (this.currentPlayer.getHealthPoints() === this.currentPlayer.getMaxHealthPoints()) {
+                throw 'У Вас уже максимальное количество здоровья'
+            }
+
+            this.currentPlayer.addHealthPoints(1);
+        }
+
+        if (card.isCatBalou()) {
+
+            if (receiver.getAvailableCards().length === 0) {
+                throw 'У этого игрока нет доступных для изъятия карт'
+            }
+
+            this.deck.discard(receiver.takeCard(0)); //TODO Выбор карты
+        }
+
+        if (card.isShop()) {
+            let shopSelection = this.deck.takeMany(this.players.getAll().length);
+            for (let i = 0; i < shopSelection.length; i++) {
+                this.players.getAll()[i].addCard(shopSelection[i]); //TODO Выбор карты из магазина
+            }
+
+        }
+
+        this.deck.discard(this.currentPlayer.takeCard(cardIndex));  // remove card from player hand and add it to used cards
+    }
+
+    _getAttackDistances() {
+        let distances = {};
+
+        this.players.getAll().forEach(player => {
+            if (player !== this.currentPlayer) {
+                distances[player.getId()] = DistanceChecker.getFinalDistance(this.currentPlayer, player, this.players.getAll());
+            }
+        });
+
+        return distances;
+    }
+
+    _getDefenseDistances() {
+        let distances = {};
+
+        this.players.getAll().forEach(player => {
+            if (player !== this.currentPlayer) {
+                distances[player.getId()] = DistanceChecker.getFinalDistance(player, this.currentPlayer, this.players.getAll());
+            }
+        });
+
+        return distances;
     }
 
     _prepare() {

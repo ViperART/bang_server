@@ -80,7 +80,7 @@ class LobbyController {
         }
 
         if (!lobby.isReadyForStart()) {
-            return new RouterResponse(false, 'Не все игроки готовы начать игру')
+            return new RouterResponse(false, 'В лобби нет четырех игроков, или не все игроки готовы начать игру')
         }
 
         if (!lobby.isHost(client)) {
@@ -95,7 +95,7 @@ class LobbyController {
         return new RouterResponse(true, {})
     }
 
-    gameDebug(params, client) {
+    gameBotDebug(params, client) {
         let clients = [
             client,
             new Client('ViperART', {id: 'testId'}),
@@ -107,6 +107,20 @@ class LobbyController {
         this.app.get('sender').sendForeach('game', 'onStart', (recipient) => {
             return gameSession.getGameViewForClient(recipient);
         }, [client]);
+
+        return new RouterResponse(true, {})
+    }
+
+    gameHumanDebug(params, client) {
+        let clients = this.app.get('clients').findAll();
+        if (clients.length !== 4) {
+            return new RouterResponse(false, 'Open 4 tab in browser');
+        }
+
+        let gameSession = this.app.get('games').create(clients);
+        this.app.get('sender').sendForeach('game', 'onStart', (recipient) => {
+            return gameSession.getGameViewForClient(recipient);
+        }, clients);
 
         return new RouterResponse(true, {})
     }

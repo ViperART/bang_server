@@ -1,5 +1,6 @@
 import Player from "../player";
 import Weapon from "../cards/weapon";
+import DistanceChecker from "./distanceChecker";
 
 class PlayersList {
     constructor(clients) {
@@ -72,6 +73,8 @@ class PlayersList {
                     cardsCount: player.getCards().length,
                     nickname: player.getNickname(),
                     isSheriff: player.isSheriff(),
+                    attackDistances: this._getAttackDistances(this.players[i]),
+                    defenseDistances: this._getDefenseDistances(this.players[i])
                 };
 
                 if (player.isMe(client)) {
@@ -84,6 +87,30 @@ class PlayersList {
         }
 
         return view
+    }
+
+    _getAttackDistances(player) {
+        let distances = {};
+
+        this.players.forEach(playerToCheck => {
+            if (playerToCheck !== player) {
+                distances[playerToCheck.getId()] = DistanceChecker.getFinalDistance(player, playerToCheck, this.players);
+            }
+        });
+
+        return distances;
+    }
+
+    _getDefenseDistances(player) {
+        let distances = {};
+
+        this.players.forEach(playerToCheck => {
+            if (playerToCheck !== player) {
+                distances[playerToCheck.getId()] = DistanceChecker.getFinalDistance(playerToCheck, player, this.players);
+            }
+        });
+
+        return distances;
     }
 
     getSheriff() {

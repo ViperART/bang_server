@@ -1,4 +1,4 @@
-import Weapon from "../cards/weapon";
+import Weapon, {VOLCANIC_WEAPON_NAME} from "../cards/weapon";
 import ActionCard, {ActionCardType} from "../cards/actionCard";
 import Buff, {BuffType} from "../cards/buff";
 
@@ -23,8 +23,8 @@ export const CardType = {
 };
 
 export const cardsList = [
-    new Weapon('Ярость', CardSuit.CLUBS, 10, 1),
-    new Weapon('Ярость', CardSuit.SPADES, 10, 1),
+    new Weapon(VOLCANIC_WEAPON_NAME, CardSuit.CLUBS, 10, 1),
+    new Weapon(VOLCANIC_WEAPON_NAME, CardSuit.SPADES, 10, 1),
     new Weapon('Скофилд', CardSuit.CLUBS, CardRank.JACK, 2),
     new Weapon('Скофилд', CardSuit.CLUBS, CardRank.QUEEN, 2),
     new Weapon('Скофилд', CardSuit.SPADES, CardRank.KING, 2),

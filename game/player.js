@@ -130,12 +130,20 @@ class Player {
         return this.cards[cardIndex];
     }
 
+    getCardIndex(card) {
+        return this.cards.indexOf(card);
+    }
+
     takeCard(cardIndex) {
         if (!this.cards[cardIndex]) {
             return false;
         }
 
         return this.cards.splice(cardIndex, 1)[0];
+    }
+
+    canThrowUnlimitedBangs() {
+        return this.getWeapon().isVolcanic() || this.getHero().isWilly();
     }
 }
 

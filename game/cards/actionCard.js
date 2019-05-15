@@ -27,7 +27,7 @@ class ActionCard extends Card {
         return this.actionType === ActionCardType.BANG;
     }
 
-    isMissed() {
+    isMiss() {
         return this.actionType === ActionCardType.MISSED;
     }
 
