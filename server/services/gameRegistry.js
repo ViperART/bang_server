@@ -9,7 +9,7 @@ class GameRegistry {
 
     create(clients) {
         const gameId = this.app.get('idGenerator').generate();
-        this.games[gameId] = new GameSession(gameId, clients);
+        this.games[gameId] = new GameSession(gameId, clients, this.app.get('announcer'));
         return this.games[gameId];
     }
 

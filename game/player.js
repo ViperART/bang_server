@@ -5,6 +5,16 @@ export const PlayerRole = {
     OUTLAW: 3
 };
 
+export const Colors = {
+    0: 'blue',
+    1: 'red',
+    2: 'yellow',
+    3: 'green',
+    4: 'purple',
+    5: 'emerald',
+    6: 'orange'
+};
+
 class Player {
     
     constructor(client) {
@@ -15,6 +25,7 @@ class Player {
         this.weapon = null;
         this.buffs = [];
         this.role = null;
+        this.color = null;
 
         this.maxHP = 0;
     }
@@ -88,6 +99,14 @@ class Player {
 
     isMe(client) {
         return this.client === client;
+    }
+
+    setColor(color) {
+        this.color = color;
+    }
+
+    getColor() {
+        return this.color;
     }
 
     setHealthPoints(hp) {

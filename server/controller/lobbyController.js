@@ -100,7 +100,10 @@ class LobbyController {
             client,
             new Client('ViperART', {id: 'testId'}),
             new Client('dekamaru', {id: 'testId2'}),
-            new Client('MarsAlex51', {id: 'testId3'})
+            new Client('MarsAlex51', {id: 'testId3'}),
+            // new Client('rand1', {id: 'testId4'}),
+            // new Client('rand2', {id: 'testId5'}),
+            // new Client('rand3', {id: 'testId6'})
         ];
 
         let gameSession = this.app.get('games').create(clients);

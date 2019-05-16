@@ -7,6 +7,7 @@ import LobbyRegistry from './server/services/lobbyRegistry';
 import Sender from './server/services/sender';
 import Client from './server/entities/client';
 import GameRegistry from "./server/services/gameRegistry";
+import Announcer from "./server/services/announcer";
 
 const wss = new Server({
     port: 8080
@@ -19,6 +20,7 @@ app.add('games', new GameRegistry(app));
 app.add('clients', new ClientsRegistry(app));
 app.add('idGenerator', new IdGenerator(app));
 app.add('sender', new Sender(app));
+app.add('announcer', new Announcer(app));
 
 
 wss.on('connection', function (ws, request) {

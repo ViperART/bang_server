@@ -1,4 +1,4 @@
-import Player from "../player";
+import Player, {Colors} from "../player";
 import Weapon from "../cards/weapon";
 import DistanceChecker from "./distanceChecker";
 
@@ -62,6 +62,7 @@ class PlayersList {
         for (let i in this.players) {
             if (this.players.hasOwnProperty(i)) {
                 let player = this.players[i];
+                player.setColor(Colors[i]);
 
                 // TODO: distance!!!!!!
                 let info = {
@@ -72,6 +73,7 @@ class PlayersList {
                     weapon: player.getWeapon(),
                     cardsCount: player.getCards().length,
                     nickname: player.getNickname(),
+                    color: player.getColor(),
                     isSheriff: player.isSheriff(),
                     attackDistances: this._getAttackDistances(this.players[i]),
                     defenseDistances: this._getDefenseDistances(this.players[i])

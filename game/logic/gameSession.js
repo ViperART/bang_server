@@ -7,11 +7,12 @@ import DistanceChecker from "./distanceChecker";
 import BangState from "../state/bang";
 
 class GameSession {
-    constructor(id, clients) {
+    constructor(id, clients, announcer) {
         this.id = id;
         this.players = new PlayersList(clients);
         this.deck = new CardDealer([...cardsList].shuffle());
         this.currentPlayer = null;
+        this.announcer = announcer;
 
         this._prepare();
         this.turnStart();
@@ -61,6 +62,7 @@ class GameSession {
 
         // TODO: check for barrel on receiver, or check for miss card
 
+
         if (this.state !== null) {
             this.state.update(card);
             this.currentPlayer = this.state.getCurrentPlayer();
@@ -81,8 +83,24 @@ class GameSession {
         }
     }
 
+
+
     turnEnd() {
-        // set next player as current player
+        if (this.currentPlayer.getCards().length > this.currentPlayer.getHealthPoints()) {
+            throw 'Количество карт в руке превышает текущее здоровье'
+        }
+
+        let index = this.players.getAll().indexOf(this.currentPlayer) + 1;
+        if (index === this.players.getAll().length) {
+            index = 0;
+        }
+
+        let nextPlayer = this.players.getAll()[index];
+
+        this.announcer.announce('Передаю эстафету %player%', this.currentPlayer, this.getClients(), nextPlayer);
+        this.setCurrentPlayer(nextPlayer);
+        this.state = null;
+        this.turnStart()
     }
 
     getClients() {
@@ -106,7 +124,7 @@ class GameSession {
             cardsLeft: this.deck.getCardsCount(),
             cardsUsed: this.deck.getUsedCardsCount(),
             attackDistances: this._getAttackDistances(),
-            defenseDistances: this._getDefenseDistances(),
+            defenseDistances: this._getDefenseDistances()
         };
     }
 
@@ -117,6 +135,8 @@ class GameSession {
 
         this.currentPlayer.setWeapon(card);
         this.currentPlayer.takeCard(cardIndex); // remove card from player hand
+
+        this.announcer.announce('Пожалуй, возьму ствол посерьезнее.', this.currentPlayer, this.getClients());
     }
 
     _handleBuffCard(card, cardIndex, receiverPlayerId) {
@@ -135,6 +155,9 @@ class GameSession {
             }
 
             receiver.addBuff(card);
+
+            this.announcer.announce('Отдохни-ка пока за решеткой, %player%', this.currentPlayer, this.getClients(), receiver);
+
         } else {
             this.currentPlayer.addBuff(card);
         }
