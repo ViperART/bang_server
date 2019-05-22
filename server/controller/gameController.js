@@ -9,19 +9,28 @@ class GameController {
     throw(params, client) {
         return this._handleGameAction(params, client, (game) => {
             game.throwCard(params.cardIndex, params.receiverPlayerId);
-        })
+        });
     }
+
+    throwCardToDiscard(params, client) {
+        return this._handleGameAction(params, client, (game) => {
+            game.discardCard(params.cardIndex, params.receiverPlayerId);
+        });
+    }
+
+
 
     skip(params, client) {
         return this._handleGameAction(params, client, (game) => {
             game.skip();
-        })
+        });
     }
 
     turnEnd(params, client) {
+
         return this._handleGameAction(params, client, (game) => {
             game.turnEnd();
-        })
+        });
     }
 
 

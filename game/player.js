@@ -161,6 +161,36 @@ class Player {
         return this.cards.splice(cardIndex, 1)[0];
     }
 
+    takeBuff(buffType) {
+        let buffCard = null;
+        this.buffs.forEach(card => {
+            if (card.getType() === buffType) {
+                buffCard = card;
+            }
+        });
+
+        if (buffCard === null) {
+            return false;
+        }
+
+        this.buffs = this.buffs.filter(card => {
+            return card.getType() !== buffCard.getType();
+        });
+
+        return buffCard;
+    }
+
+    hasBuff(buffType) {
+        let found = false;
+        this.buffs.forEach(card => {
+            if (card.getType() === buffType) {
+                found = true
+            }
+        });
+
+        return found;
+    }
+
     canThrowUnlimitedBangs() {
         return this.getWeapon().isVolcanic() || this.getHero().isWilly();
     }

@@ -5,6 +5,7 @@ import CardDealer from "./cardDealer";
 import PlayersList from "./playersList";
 import DistanceChecker from "./distanceChecker";
 import BangState from "../state/bang";
+import {BuffType} from "../cards/buff";
 
 class GameSession {
     constructor(id, clients, announcer) {
@@ -21,6 +22,14 @@ class GameSession {
     }
 
     turnStart() {
+        if (this.currentPlayer.hasBuff(BuffType.DYNAMITE)) {
+            this._handleDynamite();
+        }
+
+        if (this.currentPlayer.hasBuff(BuffType.JAIL)) {
+            this._handleJail();
+        }
+
         this._giveCardsToPlayerFromDeck(this.currentPlayer, 2);
         this.turnState = {
             isBangThrown: false
@@ -39,6 +48,8 @@ class GameSession {
         if (this.state === null) {
             throw 'Скипнули ответ когда нет состояния?'
         }
+
+        this.announcer.announce('Черт, больно же!', this.currentPlayer, this.getClients());
 
         this.state.update(null);
         this.currentPlayer = this.state.getCurrentPlayer();
@@ -83,21 +94,27 @@ class GameSession {
         }
     }
 
+    discardCard(cardIndex) {
+        let card = this.currentPlayer.getCard(cardIndex);
 
+        if (!card) {
+            throw 'Card ' + cardIndex + ' not found in current player';
+        }
+
+        this.deck.discard(this.currentPlayer.takeCard(cardIndex));
+    }
 
     turnEnd() {
+        if (this.state !== null && !this.state.hasEnded()) {
+            throw 'В данный момент Вы не можете закончить свой ход.'
+        }
+
         if (this.currentPlayer.getCards().length > this.currentPlayer.getHealthPoints()) {
-            throw 'Количество карт в руке превышает текущее здоровье'
+            throw 'Количество карт в руке превышает текущее здоровье.'
         }
 
-        let index = this.players.getAll().indexOf(this.currentPlayer) + 1;
-        if (index === this.players.getAll().length) {
-            index = 0;
-        }
-
-        let nextPlayer = this.players.getAll()[index];
-
-        this.announcer.announce('Передаю эстафету %player%', this.currentPlayer, this.getClients(), nextPlayer);
+        let nextPlayer = this._getNextPlayer();
+        this.announcer.announce('Передаю эстафету %player%!', this.currentPlayer, this.getClients(), nextPlayer);
         this.setCurrentPlayer(nextPlayer);
         this.state = null;
         this.turnStart()
@@ -130,7 +147,7 @@ class GameSession {
 
     _handleWeaponCard(card, cardIndex) {
         if (this.players.hasWeapon(card)) {
-            throw card.getName() + ' уже присутствует на столе';
+            throw card.getName() + ' уже присутствует на столе.';
         }
 
         this.currentPlayer.setWeapon(card);
@@ -141,7 +158,7 @@ class GameSession {
 
     _handleBuffCard(card, cardIndex, receiverPlayerId) {
         if (this.players.hasBuff(card)) {
-            throw card.getName() + ' уже присутствует на столе';
+            throw card.getName() + ' уже присутствует на столе.';
         }
 
         if (card.isJail()) {
@@ -151,15 +168,31 @@ class GameSession {
 
             let receiver = this.players.findById(receiverPlayerId);
             if (receiver.isSheriff()) {
-                throw 'Нельзя посадить шерифа в тюрьму';
+                throw 'Нельзя посадить шерифа в тюрьму.';
             }
 
             receiver.addBuff(card);
 
-            this.announcer.announce('Отдохни-ка пока за решеткой, %player%', this.currentPlayer, this.getClients(), receiver);
+            this.announcer.announce('Отдохни-ка пока за решеткой, %player%!', this.currentPlayer, this.getClients(), receiver);
 
         } else {
             this.currentPlayer.addBuff(card);
+        }
+
+        if (card.isMustang()) {
+            this.announcer.announce('С моей новой лошадкой вам меня не достать!', this.currentPlayer, this.getClients())
+        }
+
+        if (card.isDynamite()) {
+            this.announcer.announce('Пора сыграть во взрывоопасную игру, ребята.', this.currentPlayer, this.getClients())
+        }
+
+        if (card.isBarrel()) {
+            this.announcer.announce('Теперь вам меня не взять!', this.currentPlayer, this.getClients())
+        }
+
+        if (card.isScope()) {
+            this.announcer.announce('Теперь вам от меня точно не уйти, подонки!', this.currentPlayer, this.getClients())
         }
 
         this.currentPlayer.takeCard(cardIndex); // remove card from player hand
@@ -170,43 +203,55 @@ class GameSession {
         if (card.isBang()) {
 
             if (this.turnState.isBangThrown && !this.currentPlayer.canThrowUnlimitedBangs()) {
-                throw 'Вы не можете разыграть более одной карты "Бах!" в ход'
+                throw 'Вы не можете разыграть более одной карты "Бах!" в ход.'
             }
 
             if (!DistanceChecker.canReachTarget(this.currentPlayer, receiver, this.players.getAll())) {
-                throw 'Вы не можете достать до этого игрока';
+                throw 'Вы не можете достать до этого игрока.';
             }
 
             if (this.state !== null) {
                 throw 'Кинули бэнг когда уже есть активное состояние?'
             }
 
+            this.announcer.announce('Получай пулю в лоб, %player%!', this.currentPlayer, this.getClients(), receiver);
+
             this.deck.discard(this.currentPlayer.takeCard(cardIndex));
-            this.state = new BangState(this.deck, this.currentPlayer, receiver, card);
+            this.state = new BangState(this, receiver, card);
             this.currentPlayer = this.state.getCurrentPlayer();
 
             return;
         }
 
+        if (card.isDuel()) {
+            this.announcer.announce('Решим наши вопросы прямо здесь и сейчас, %player%!', this.currentPlayer, this.getClients(), receiver);
+        }
+
         if (card.isPanic()) {
 
             if (!DistanceChecker.canReachTarget(this.currentPlayer, receiver, this.players.getAll())) {
-                throw 'Вы не можете достать до этого игрока';
+                throw 'Вы не можете достать до этого игрока.';
             }
 
             if (receiver.getAvailableCards().length === 0) {
-                throw 'У этого игрока нет доступных для изъятия карт'
+                throw 'У этого игрока нет доступных для изъятия карт.'
             }
+
+            this.announcer.announce('У тебя есть то, что мне нужно, %player%!', this.currentPlayer, this.getClients(), receiver);
 
             this.currentPlayer.addCard(receiver.takeCard(0)); //TODO Выбор карты
         }
 
         if (card.isDiligenza()) {
             this._giveCardsToPlayerFromDeck(this.currentPlayer, 2);
+
+            this.announcer.announce('Именно то, что было нужно!', this.currentPlayer, this.getClients());
         }
 
         if (card.isWellsFargo()) {
             this._giveCardsToPlayerFromDeck(this.currentPlayer, 3);
+
+            this.announcer.announce('Да у меня тут настоящий джек-пот!', this.currentPlayer, this.getClients());
         }
 
         if (card.isGatling() && true) {  //TODO проверка на ответ "Мимо"
@@ -215,6 +260,9 @@ class GameSession {
                     player.loseHealthPoints(1)
                 }
             });
+
+            this.announcer.announce('Вот это я понимаю - ствол! Танцуйте, ребята!', this.currentPlayer, this.getClients());
+
         }
 
         if (card.isIndians() && true) {   //TODO Проверка на сброс Бэнга
@@ -223,20 +271,27 @@ class GameSession {
                     player.loseHealthPoints(1)
                 }
             });
+
+            this.announcer.announce('Снова аборигены? Эти ребята так просто не отстанут.', this.currentPlayer, this.getClients());
+
         }
 
         if (card.isSaloon()) {
             this.players.getAll().forEach(player => {
                 player.addHealthPoints(1);
             });
+
+            this.announcer.announce('Всем выпивки за мой счет!', this.currentPlayer, this.getClients());
         }
 
         if (card.isBeer()) {
             if (this.currentPlayer.getHealthPoints() === this.currentPlayer.getMaxHealthPoints()) {
-                throw 'У Вас уже максимальное количество здоровья'
+                throw 'У Вас уже максимальное количество здоровья.'
             }
 
             this.currentPlayer.addHealthPoints(1);
+
+            this.announcer.announce('Что может быть лучше пива в столь жаркий денек?', this.currentPlayer, this.getClients());
         }
 
         if (card.isCatBalou()) {
@@ -246,6 +301,8 @@ class GameSession {
             }
 
             this.deck.discard(receiver.takeCard(0)); //TODO Выбор карты
+
+            this.announcer.announce('Эта красотка уже многих облапошила, %player%.', this.currentPlayer, this.getClients(), receiver);
         }
 
         if (card.isShop()) {
@@ -254,9 +311,20 @@ class GameSession {
                 this.players.getAll()[i].addCard(shopSelection[i]); //TODO Выбор карты из магазина
             }
 
+            this.announcer.announce('Новые поставки? А товар-то неплохой.', this.currentPlayer, this.getClients());
         }
 
         this.deck.discard(this.currentPlayer.takeCard(cardIndex));  // remove card from player hand and add it to used cards
+    }
+
+    _getNextPlayer() {
+        // TODO: check if player is dead and if it is skip dead player
+        let index = this.players.getAll().indexOf(this.currentPlayer) + 1;
+        if (index === this.players.getAll().length) {
+            index = 0;
+        }
+
+        return this.players.getAll()[index];
     }
 
     _getAttackDistances() {
@@ -335,6 +403,33 @@ class GameSession {
     _giveCardsToPlayerFromDeck(player, cardsCount) {
         for (let i = 0; i < cardsCount; i++) {
             player.addCard(this.deck.takeOne());
+        }
+    }
+
+    _handleDynamite() {
+        let checkCard = this.deck.takeOne();
+        let dynamite = this.currentPlayer.takeBuff(BuffType.DYNAMITE);
+        if (checkCard.isSpades() && checkCard.getRank() >= 2 && checkCard.getRank() <= 9) {
+            this.currentPlayer.loseHealthPoints(3); // TODO: PLAYER DEATH CHECK (beer?)
+            this.deck.discard(dynamite);
+            this.announcer.announce('Твою ж налево!', this.currentPlayer, this.getClients());
+        } else {
+            this._getNextPlayer().addBuff(dynamite);
+            this.announcer.announce('Ха, пронесло! Теперь это твое, %player%!', this.currentPlayer, this.getClients(), this._getNextPlayer());
+        }
+
+        this.deck.discard(checkCard)
+    }
+
+    _handleJail() {
+        let checkCard = this.deck.takeOne();
+        this.deck.discard(this.currentPlayer.takeBuff(BuffType.JAIL));
+        if (checkCard.isHearts()) {
+            this.announcer.announce('Вот и славненько!', this.currentPlayer, this.getClients());
+        } else {
+            this.announcer.announce('Черт с ним, отдохну за решеткой еще ход.', this.currentPlayer, this.getClients(), this._getNextPlayer());
+            let nextPlayer = this._getNextPlayer();
+            this.setCurrentPlayer(nextPlayer);
         }
     }
 }

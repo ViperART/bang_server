@@ -1,4 +1,4 @@
-import {CardType} from "../data/cards";
+import {CardSuit, CardType} from "../data/cards";
 
 class Card {
     constructor(name, suit, rank, type) {
@@ -27,6 +27,20 @@ class Card {
     isWeapon() {
         return this.type === CardType.WEAPON;
     }
+
+    isSpades() {
+        return this.suit === CardSuit.SPADES;
+    }
+
+    isHearts() {
+        return this.suit === CardSuit.HEARTS;
+    }
+
+    getRank() {
+        return this.rank;
+    }
+
+
 }
 
 export default Card;

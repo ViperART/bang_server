@@ -1,8 +1,10 @@
 class BangState {
-    constructor(deck, initiator, receiver, bangCard) {
-        this.deck = deck;
-        this.initiator = initiator;
+    constructor(gameSession, receiver, bangCard) {
+        this.deck = gameSession.deck;
+        this.initiator = gameSession.currentPlayer;
         this.receiver = receiver;
+        this.announcer = gameSession.announcer;
+        this.gameSession = gameSession;
 
         this.currentPlayer = receiver;
         this.isEnd = false;
@@ -20,6 +22,8 @@ class BangState {
             this._close();
             return
         }
+
+        this.announcer.announce('Ха, тебе бы прицел поправить, %player%!', this.currentPlayer, this.gameSession.getClients(), this.receiver);
 
         this.cardsOnTable.push(card);
         this.deck.discard(this.currentPlayer.takeCard(this.currentPlayer.getCardIndex(card)));

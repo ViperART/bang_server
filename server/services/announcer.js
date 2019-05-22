@@ -7,6 +7,7 @@ class Announcer {
         this.lastAnnounceClients = null;
     }
 
+    // TODO: make announce array
     announce(message, from, clients, to = null) {
         // message example: {Ты сгниешь в аду, @red{ViperART}}
         let toObject = null;

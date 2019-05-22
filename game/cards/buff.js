@@ -15,6 +15,10 @@ class Buff extends Card {
         this.buffType = buffType;
     }
 
+    getType() {
+        return this.buffType;
+    }
+
     isJail() {
         return this.buffType === BuffType.JAIL;
     }
@@ -26,6 +30,15 @@ class Buff extends Card {
     isScope() {
         return this.buffType === BuffType.SCOPE;
     }
+
+    isDynamite() {
+        return this.buffType === BuffType.DYNAMITE;
+    }
+
+    isBarrel() {
+        return this.buffType === BuffType.BARREL;
+    }
+
 }
 
 export default Buff;
