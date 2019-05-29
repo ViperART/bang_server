@@ -3,11 +3,9 @@ import {Colors} from "../../game/player";
 class Announcer {
     constructor(app) {
         this.app = app;
-        this.lastAnnounce = null;
-        this.lastAnnounceClients = null;
+        this.announces = []; // {announce: announce, clients: clients}
     }
 
-    // TODO: make announce array
     announce(message, from, clients, to = null) {
         // message example: {Ты сгниешь в аду, @red{ViperART}}
         let toObject = null;
@@ -21,26 +19,29 @@ class Announcer {
             message = message.replace('%player%', `@${toObject.color}{${toObject.nickname}}`)
         }
 
-        this.lastAnnounce = {
-            text: message,
-            fromPlayer: {
-                id: from.getId(),
-                nickname: from.getNickname(),
-                color: from.getColor()
+        this.announces.push({
+            announce: {
+                text: message,
+                fromPlayer: {
+                    id: from.getId(),
+                    nickname: from.getNickname(),
+                    color: from.getColor()
+                },
+                to: toObject
             },
-            to: toObject,
-        };
-
-        this.lastAnnounceClients = clients;
+            clients: clients
+        });
     }
 
     call() {
-        if (this.lastAnnounce !== null) {
-            this.app.get('sender').sendForeach('game', 'announce', (recipient) => {
-                return this.lastAnnounce;
-            }, this.lastAnnounceClients);
+        if (this.announces.length > 0) {
+            this.announces.forEach((announceItem) => {
+                this.app.get('sender').sendForeach('game', 'announce', (recipient) => {
+                    return announceItem.announce;
+                }, announceItem.clients);
+            });
 
-            this.lastAnnounce = null;
+            this.announces = [];
         }
     }
 }

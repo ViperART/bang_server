@@ -48,6 +48,7 @@ wss.on('connection', function (ws, request) {
             return;
         }
 
+        console.log('========>', message);
         let routerResponse = app.get('router').handle(message, client);
 
         if (routerResponse.isError()) {
@@ -55,11 +56,13 @@ wss.on('connection', function (ws, request) {
             return;
         }
 
-        ws.send(JSON.stringify({
+        let response = JSON.stringify({
             success: true,
             type: message.type,
             response: routerResponse.getResponse()
-        }))
+        });
+
+        ws.send(response)
     });
 
     ws.on('close', function () {

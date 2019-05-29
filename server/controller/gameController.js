@@ -52,6 +52,7 @@ class GameController {
         try {
             callback(game);
         } catch (errorMessage) {
+            console.log(errorMessage);
             return new RouterResponse(false, errorMessage);
         }
 

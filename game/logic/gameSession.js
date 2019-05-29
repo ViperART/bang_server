@@ -6,6 +6,9 @@ import PlayersList from "./playersList";
 import DistanceChecker from "./distanceChecker";
 import BangState from "../state/bang";
 import {BuffType} from "../cards/buff";
+import GatlingState from "../state/gatling";
+import IndiansState from "../state/indians";
+import DuelState from "../state/duel";
 
 class GameSession {
     constructor(id, clients, announcer) {
@@ -102,6 +105,8 @@ class GameSession {
         }
 
         this.deck.discard(this.currentPlayer.takeCard(cardIndex));
+
+        this.announcer.announce('Это мне больше не нужно.', this.currentPlayer, this.getClients())
     }
 
     turnEnd() {
@@ -114,7 +119,7 @@ class GameSession {
         }
 
         let nextPlayer = this._getNextPlayer();
-        this.announcer.announce('Передаю эстафету %player%!', this.currentPlayer, this.getClients(), nextPlayer);
+        this.announcer.announce('Твой ход, %player%!', this.currentPlayer, this.getClients(), nextPlayer);
         this.setCurrentPlayer(nextPlayer);
         this.state = null;
         this.turnStart()
@@ -210,14 +215,9 @@ class GameSession {
                 throw 'Вы не можете достать до этого игрока.';
             }
 
-            if (this.state !== null) {
-                throw 'Кинули бэнг когда уже есть активное состояние?'
-            }
-
+            this.deck.discard(this.currentPlayer.takeCard(cardIndex));  // remove card from player hand and add it to used cards
             this.announcer.announce('Получай пулю в лоб, %player%!', this.currentPlayer, this.getClients(), receiver);
-
-            this.deck.discard(this.currentPlayer.takeCard(cardIndex));
-            this.state = new BangState(this, receiver, card);
+            this.state = new BangState(this, card, receiver);
             this.currentPlayer = this.state.getCurrentPlayer();
 
             return;
@@ -225,9 +225,13 @@ class GameSession {
 
         if (card.isDuel()) {
             this.announcer.announce('Решим наши вопросы прямо здесь и сейчас, %player%!', this.currentPlayer, this.getClients(), receiver);
+            this.state = new DuelState(this, card, receiver);
+            this.currentPlayer = this.state.getCurrentPlayer();
+
+            return;
         }
 
-        if (card.isPanic()) {
+        if (card.isPanic()) { // TODO: IMPLEMENT
 
             if (!DistanceChecker.canReachTarget(this.currentPlayer, receiver, this.players.getAll())) {
                 throw 'Вы не можете достать до этого игрока.';
@@ -254,26 +258,22 @@ class GameSession {
             this.announcer.announce('Да у меня тут настоящий джек-пот!', this.currentPlayer, this.getClients());
         }
 
-        if (card.isGatling() && true) {  //TODO проверка на ответ "Мимо"
-            this.players.getAll().forEach(player => {
-                if (player !== this.currentPlayer) {
-                    player.loseHealthPoints(1)
-                }
-            });
-
+        if (card.isGatling()) {
+            this.deck.discard(this.currentPlayer.takeCard(cardIndex));  // remove card from player hand and add it to used cards
             this.announcer.announce('Вот это я понимаю - ствол! Танцуйте, ребята!', this.currentPlayer, this.getClients());
+            this.state = new GatlingState(this, card);
+            this.currentPlayer = this.state.getCurrentPlayer();
 
+            return;
         }
 
-        if (card.isIndians() && true) {   //TODO Проверка на сброс Бэнга
-            this.players.getAll().forEach(player => {
-                if (player !== this.currentPlayer) {
-                    player.loseHealthPoints(1)
-                }
-            });
-
+        if (card.isIndians()) {
+            this.deck.discard(this.currentPlayer.takeCard(cardIndex));  // remove card from player hand and add it to used cards
             this.announcer.announce('Снова аборигены? Эти ребята так просто не отстанут.', this.currentPlayer, this.getClients());
+            this.state = new IndiansState(this, card);
+            this.currentPlayer = this.state.getCurrentPlayer();
 
+            return;
         }
 
         if (card.isSaloon()) {
@@ -294,7 +294,7 @@ class GameSession {
             this.announcer.announce('Что может быть лучше пива в столь жаркий денек?', this.currentPlayer, this.getClients());
         }
 
-        if (card.isCatBalou()) {
+        if (card.isCatBalou()) { // TODO: IMPLEMENT
 
             if (receiver.getAvailableCards().length === 0) {
                 throw 'У этого игрока нет доступных для изъятия карт'
@@ -305,7 +305,7 @@ class GameSession {
             this.announcer.announce('Эта красотка уже многих облапошила, %player%.', this.currentPlayer, this.getClients(), receiver);
         }
 
-        if (card.isShop()) {
+        if (card.isShop()) { // TODO: IMPLEMENT
             let shopSelection = this.deck.takeMany(this.players.getAll().length);
             for (let i = 0; i < shopSelection.length; i++) {
                 this.players.getAll()[i].addCard(shopSelection[i]); //TODO Выбор карты из магазина
