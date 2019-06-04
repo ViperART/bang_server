@@ -1,9 +1,9 @@
 import {BuffType} from "../cards/buff";
-import BaseState from "./base";
+import BaseState, {StateType} from "./base";
 
 class BangState extends BaseState {
     constructor(gameSession, card, receiver) {
-        super(gameSession, card);
+        super(gameSession, card, StateType.BANG);
         this.receiver = receiver;
         this.currentPlayer = receiver;
         this.checkBarrel();
@@ -16,6 +16,9 @@ class BangState extends BaseState {
 
         if (card === null) {
             this.receiver.loseHealthPoints(1);
+            if (this.receiver.getHealthPoints() <= 0) {
+                this.gameSession._tryReanimateOrKillPlayer(this.receiver);
+            }
             this._close();
             return;
         }

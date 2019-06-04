@@ -1,9 +1,9 @@
 import {BuffType} from "../cards/buff";
-import BaseState from "./base";
+import BaseState, {StateType} from "./base";
 
 class DuelState extends BaseState {
     constructor(gameSession, card, receiver) {
-        super(gameSession, card);
+        super(gameSession, card, StateType.DUEL);
         this.receiver = receiver;
         this.currentPlayer = receiver;
     }
@@ -15,6 +15,9 @@ class DuelState extends BaseState {
 
         if (card === null) {
             this.currentPlayer.loseHealthPoints(1);
+            if (this.currentPlayer.getHealthPoints() <= 0) {
+                this.gameSession._tryReanimateOrKillPlayer(this.currentPlayer);
+            }
             this._close();
             return;
         }

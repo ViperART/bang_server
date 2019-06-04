@@ -26,8 +26,13 @@ class Player {
         this.buffs = [];
         this.role = null;
         this.color = null;
+        this.dead = false;
 
         this.maxHP = 0;
+    }
+
+    isDead() {
+        return this.dead;
     }
 
     getId() {
@@ -123,6 +128,22 @@ class Player {
 
     loseHealthPoints(amount) {
         this.hp -= amount;
+    }
+
+    getBeerCard() {
+        let beers = this.cards.filter(card => {
+            return card.isAction() && card.isBeer();
+        });
+
+        if (beers.length === 0) {
+            return null;
+        }
+
+        return this.takeCard(this.getCardIndex(beers[0]));
+    }
+
+    kill() {
+        this.dead = true;
     }
 
     addHealthPoints(amount) {

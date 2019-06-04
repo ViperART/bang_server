@@ -1,9 +1,9 @@
 import {BuffType} from "../cards/buff";
-import BaseState from "./base";
+import BaseState, {StateType} from "./base";
 
 class IndiansState extends BaseState {
     constructor(gameSession, card) {
-        super(gameSession, card);
+        super(gameSession, card, StateType.INDIANS);
         this.currentPlayer = this.gameSession._getNextPlayer();
     }
 
@@ -14,6 +14,9 @@ class IndiansState extends BaseState {
 
         if (card === null) {
             this.currentPlayer.loseHealthPoints(1);
+            if (this.currentPlayer.getHealthPoints() <= 0) {
+                this.gameSession._tryReanimateOrKillPlayer(this.currentPlayer);
+            }
             this.currentPlayer = this.gameSession._getNextPlayer();
             if (this.isInitiator(this.currentPlayer)) {
                 this._close();

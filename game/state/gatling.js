@@ -1,9 +1,9 @@
 import {BuffType} from "../cards/buff";
-import BaseState from "./base";
+import BaseState, {StateType} from "./base";
 
 class GatlingState extends BaseState {
     constructor(gameSession, card) {
-        super(gameSession, card);
+        super(gameSession, card, StateType.GATLING);
         this.currentPlayer = this.gameSession._getNextPlayer();
         this.checkBarrel(this.currentPlayer);
     }
@@ -15,6 +15,9 @@ class GatlingState extends BaseState {
 
         if (card === null) {
             this.currentPlayer.loseHealthPoints(1);
+            if (this.currentPlayer.getHealthPoints() <= 0) {
+                this.gameSession._tryReanimateOrKillPlayer(this.currentPlayer);
+            }
             this.currentPlayer = this.gameSession._getNextPlayer();
             if (this.isInitiator(this.currentPlayer)) {
                 this._close();

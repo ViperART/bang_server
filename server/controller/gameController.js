@@ -19,7 +19,6 @@ class GameController {
     }
 
 
-
     skip(params, client) {
         return this._handleGameAction(params, client, (game) => {
             game.skip();
@@ -27,12 +26,22 @@ class GameController {
     }
 
     turnEnd(params, client) {
-
         return this._handleGameAction(params, client, (game) => {
             game.turnEnd();
         });
     }
 
+    withdraw(params, client) {
+        return this._handleGameAction(params, client, (game) => {
+            game.withdrawCard(params.thrownCardIndex, params.withdrawCardIndex, params.receiverPlayerId);
+        });
+    }
+
+    takeCardFromShop(params, client) {
+        return this._handleGameAction(params, client, (game) => {
+            game.takeCardFromShop(params.withdrawCardIndex);
+        });
+    }
 
     _handleGameAction(params, client, callback) {
         let game = this.app.get('games').findById(params.gameId);

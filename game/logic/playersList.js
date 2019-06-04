@@ -12,11 +12,15 @@ class PlayersList {
         return this.players;
     }
 
+    getAlivePlayers() {
+        return this.players.filter((player) => !player.isDead());
+    }
+
     findById(id) {
         for (let i in this.players) {
             if (this.players.hasOwnProperty(i)) {
                 let player = this.players[i];
-                if (player.getId() === id) {
+                if (player.getId() === id && !player.isDead()) {
                     return player;
                 }
             }
@@ -76,11 +80,15 @@ class PlayersList {
                     color: player.getColor(),
                     isSheriff: player.isSheriff(),
                     attackDistances: this._getAttackDistances(this.players[i]),
-                    defenseDistances: this._getDefenseDistances(this.players[i])
+                    defenseDistances: this._getDefenseDistances(this.players[i]),
+                    dead: player.isDead()
                 };
 
-                if (player.isMe(client)) {
+                if (player.isDead() || player.isMe(client)) {
                     info['role'] = player.getRole();
+                }
+
+                if (player.isMe(client)) {
                     info['cards'] = player.getCards();
                 }
 
