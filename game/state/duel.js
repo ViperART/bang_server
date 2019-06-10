@@ -25,7 +25,6 @@ class DuelState extends BaseState {
         this.announcer.announce('Ну давай, покажи, чего стоишь, %player%!', this.currentPlayer, this.gameSession.getClients(), this.getNextPlayer());
 
         this.cardsOnTable.push(card);
-        this.deck.discard(this.currentPlayer.takeCard(this.currentPlayer.getCardIndex(card)));
         this.currentPlayer = this.getNextPlayer();
     }
 

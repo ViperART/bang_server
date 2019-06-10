@@ -97,6 +97,10 @@ class GameSession {
     }
 
     discardCard(cardIndex) {
+        if (this.state !== null && this.state.hasEnded()) {
+            this.state = null;
+        }
+
         let card = this.currentPlayer.getCard(cardIndex);
 
         if (!card) {
@@ -276,6 +280,7 @@ class GameSession {
         }
 
         if (card.isDuel()) {
+            this.deck.discard(this.currentPlayer.takeCard(cardIndex));
             this.announcer.announce('Решим наши вопросы прямо здесь и сейчас, %player%!', this.currentPlayer, this.getClients(), receiver);
             this.state = new DuelState(this, card, receiver);
             this.currentPlayer = this.state.getCurrentPlayer();
@@ -374,14 +379,17 @@ class GameSession {
         return alive[index];
     }
 
-    _getAttackDistances() {
+        _getAttackDistances() {
         let distances = {};
-
+        this.players.getAlivePlayers().forEach((player, index) => {
+            console.log('IS PLAYER ' + index + ' DEAD: ' + player.dead);
+        });
         this.players.getAlivePlayers().forEach(player => {
             if (player !== this.currentPlayer) {
                 distances[player.getId()] = DistanceChecker.getFinalDistance(this.currentPlayer, player, this.players.getAlivePlayers());
             }
         });
+        console.log('DISTANCES: ' + distances);
 
         return distances;
     }
